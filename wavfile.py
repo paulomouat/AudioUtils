@@ -224,7 +224,7 @@ def read(file, readmarkers=False, readmarkerlabels=False, readmarkerslist=False,
             size, idx = struct.unpack('<ii', str1)
             size = size + (size % 2)
             str2 = fid.read(4)
-            rlength = struct.unpack('<i', str2)
+            rlength, *other = struct.unpack('<i', str2)
             term = fid.read(size-8).rstrip(bytes('\x00', 'UTF-8'))  # b'rgn '
             _markersdict[idx]['length'] = rlength
 
@@ -329,8 +329,10 @@ def write(filename, rate, data, bitrate=None, markers=None, loops=None, pitch=No
 
     # cue chunk
     if markers:    # != None and != []
+        rlengths = []
         if isinstance(markers[0], dict):       # then we have [{'position': 100, 'label': 'marker1'}, ...]
             labels = [m['label'] for m in markers]
+            rlengths = [m['length'] for m in markers if m['length'] != -1]
             markers = [m['position'] for m in markers]
         else:
             labels = ['' for m in markers]
@@ -342,19 +344,69 @@ def write(filename, rate, data, bitrate=None, markers=None, loops=None, pitch=No
             s = struct.pack('<iiiiii', i + 1, c, 1635017060, 0, 0, c)           # 1635017060 is struct.unpack('<i',b'data')
             fid.write(s)
 
-        lbls = b''
-        for i, lbl in enumerate(labels):
-            lbls += b'labl'
-            label = lbl + (b'\x00' if len(lbl) % 2 == 1 else b'\x00\x00')
-            size = len(lbl) + 1 + 4          # because \x00
-            lbls += struct.pack('<ii', size, i + 1)
-            lbls += label
+        hasRegions = len(rlengths) == len(markers)
 
-        fid.write(b'LIST')
-        size = len(lbls) + 4
-        fid.write(struct.pack('<i', size))
-        fid.write(b'adtl')                                                      # https://web.archive.org/web/20141226210234/http://www.sonicspot.com/guide/wavefiles.html#list
-        fid.write(lbls)
+        if not hasRegions:
+            lbls = b''
+            for i, lbl in enumerate(labels):
+                lbls += b'labl'
+                # label string needs to be null-terminated and overall
+                # size in bytes needs to be an even number
+                label = lbl + (b'\x00' if len(lbl) % 2 == 1 else b'\x00\x00')
+                # size is computed by adding the following:
+                #   1. 4 bytes for the cue point id
+                #   2. length of the label string,
+                #   3. 1 for the null-termination character
+                size = len(lbl) + 1 + 4
+                lbls += struct.pack('<ii', size, i + 1)
+                lbls += label
+
+            fid.write(b'LIST')
+            # list size is computed by adding the following:
+            #   1. 4 bytes for the type id, 'adtl'
+            #   2. the total length of all the label chunks
+            size = len(lbls) + 4
+            fid.write(struct.pack('<i', size))
+            fid.write(b'adtl')                                                      # https://web.archive.org/web/20141226210234/http://www.sonicspot.com/guide/wavefiles.html#list
+            fid.write(lbls)
+        else:
+            listdata = b''
+            # list size starts with a value corresponding to:
+            #   1. 4 bytes for the type id, 'adtl'
+            list_chunksize = 4
+            for i, lbl in enumerate(labels):
+                labl = b'labl'
+                # label size is computed by adding the following:
+                #   1. 4 bytes for the cue point id
+                #   2. length of the label string,
+                #   3. 1 for the null-termination character
+                labl_size = 4 + 1
+                labl_size += len(lbl)          
+                labl += struct.pack('<ii', labl_size, i + 1)
+                # label string needs to be null-terminated and overall
+                # size in bytes needs to be an even number
+                labl += lbl + (b'\x00' if len(lbl) % 2 == 1 else b'\x00\x00')
+
+                rlength = rlengths[i]
+                ltxt = b'ltxt'
+                # ltxt size is computed by adding the following:
+                #   1. 4 bytes for the cue point id
+                #   2. 4 bytes for the region length,
+                #   3. 4 bytes for the purpose id, typically b'rgn '
+                #   4. 8 bytes for country, language, dialect and codepage
+                ltxt_size = 20 
+                ltxt += struct.pack('<ii', ltxt_size, i + 1)
+                ltxt += struct.pack('<i', rlength)
+                ltxt += b'rgn \x00\x00\x00\x00\x00\x00\x00\x00'
+
+                listdata += ltxt
+                listdata += labl
+                list_chunksize += len(labl) + len(ltxt)
+
+            fid.write(b'LIST')
+            fid.write(struct.pack('<i', list_chunksize))
+            fid.write(b'adtl')                                                      # https://web.archive.org/web/20141226210234/http://www.sonicspot.com/guide/wavefiles.html#list
+            fid.write(listdata)
 
     # smpl chunk
     if loops or pitch:

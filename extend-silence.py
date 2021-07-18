@@ -72,7 +72,7 @@ def main(argv):
         if idx % 2 == 1 and len(markers) > 0:
             marker = markers[0]
             markers.pop(0)
-            doubledmarker = {'position': pos, 'label': marker["label"]}
+            doubledmarker = {'position': pos, 'label': marker["label"], 'length': marker["length"]}
             doubledmarkers.append(doubledmarker)
         idx = idx + 1
 
