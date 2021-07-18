@@ -1,13 +1,10 @@
 import sys, getopt
 import numpy as np
 from wavfile import read, write
-
-def output(list):
-    size = len(list)
-    print(list[:min(10, size)]) if size > 0 else print('[]')
+from wavfileinfo import outputinfo
 
 def usage():
-    print('extend-silence.py -i <inputfile> -o <outputfile>')
+    print('extend-length-between-markers.py -i <inputfile> -o <outputfile>')
     sys.exit(2)
 
 def main(argv):
@@ -31,22 +28,12 @@ def main(argv):
     double = True
 
     (rate, data, bits, cue, markers, unsupported, *other) = read(inputfile, readmarkers=True, readmarkerslist=True, readunsupported=True)
-    print('input file:', inputfile)
-    print('rate:', rate, 'bits:', bits, 'dtype:', data.dtype)
-    print('size:', data.size, 'shape:', data.shape)
-    output(cue)
-    output(markers)
-    output(unsupported)
+    print('input file:')
+    outputinfo(inputfile)
 
     segments = np.split(data, cue)
     segmentslen = len(segments)
     print('there are', segmentslen, 'segments')
-
-    idx = 0
-    for segment in segments:
-        size = int(segment.size/2)
-        #print(idx, size)
-        idx = idx + 1
 
     if not double:
         sys.exit()
@@ -56,7 +43,6 @@ def main(argv):
     idx = 0
     for segment in segments:
         size = int(segment.size/2)
-        #print(idx, size)
         doubleds.append(segment)
         space = np.zeros_like(segment)
         doubleds.append(space)
@@ -80,12 +66,8 @@ def main(argv):
 
     write(outputfile, rate, doubleddata, bits, doubledmarkers)
 
-    (rate, data, bits, cue, doubledmarkers, *other) = read(outputfile, readmarkers=True, readmarkerslist=True)
-    print('output file:', outputfile)
-    print('rate:', rate, 'bits:', bits, 'dtype:', data.dtype)
-    print('size:', data.size, 'shape:', data.shape)
-    output(cue)
-    output(doubledmarkers)
+    print('output file:')
+    outputinfo(outputfile)
 
 if __name__ == "__main__":
    main(sys.argv[1:])
