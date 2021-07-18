@@ -40,19 +40,16 @@ def main(argv):
 
     doubleds = []
 
-    idx = 0
-    for segment in segments:
+    for idx, segment in enumerate(segments):
         size = int(segment.size/2)
         doubleds.append(segment)
         space = np.zeros_like(segment)
         doubleds.append(space)
-        idx = idx + 1
 
     doubledmarkers = []
 
     pos = 0
-    idx = 0
-    for doubled in doubleds:
+    for idx, doubled in enumerate(doubleds):
         size = int(doubled.size/2)
         pos = pos + size
         if idx % 2 == 1 and len(markers) > 0:
@@ -60,7 +57,6 @@ def main(argv):
             markers.pop(0)
             doubledmarker = {'position': pos, 'label': marker["label"], 'length': marker["length"]}
             doubledmarkers.append(doubledmarker)
-        idx = idx + 1
 
     doubleddata = np.concatenate(doubleds)
 
