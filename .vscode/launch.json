@@ -10,7 +10,8 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": ["--inputfile", "regions-small.wav", "--outputfile", "regions-extended.wav"],
+            "args": ["--markerfile", "~/Downloads/projects/audioutils/markers-small.txt", "--inputfile", "~/Downloads/projects/audioutils/no-markers-small.wav", "--outputfile", "~/Downloads/projects/audioutils/added-markers-small.wav"],
+            //"args": ["--inputfile", "~/Downloads/projects/audioutils/regions-small.wav", "--outputfile", "~/Downloads/projects/audioutils/regions-extended.wav"],
         }
     ]
 }
