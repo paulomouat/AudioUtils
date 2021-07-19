@@ -29,7 +29,7 @@ def main(argv):
 
     double = True
 
-    (rate, data, bits, cue, markers, unsupported, *other) = read(inputfile, readmarkers=True, readmarkerslist=True, readunsupported=True)
+    (rate, data, bits, cue, markers, *other) = read(inputfile, readmarkers=True, readmarkerslist=True)
     print('input file:')
     outputinfo(inputfile)
 
