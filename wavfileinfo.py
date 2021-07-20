@@ -4,6 +4,7 @@ import datetime
 def output(listname, list):
     size = len(list)
     print(listname)
+    print('element count:', size)
     print(list[:min(10, size)]) if size > 0 else print('[]')
 
 def outputinfo(inputfile):

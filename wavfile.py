@@ -332,7 +332,7 @@ def write(filename, rate, data, bitrate=None, markers=None, loops=None, pitch=No
         rlengths = []
         if isinstance(markers[0], dict):       # then we have [{'position': 100, 'label': 'marker1'}, ...]
             labels = [m['label'] for m in markers]
-            rlengths = [m['length'] for m in markers if m['length'] != -1]
+            rlengths = [m['length'] for m in markers if m['length'] != -1] # will misalign rlengths with labels when lengths are -1
             markers = [m['position'] for m in markers]
         else:
             labels = ['' for m in markers]
