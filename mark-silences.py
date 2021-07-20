@@ -7,7 +7,7 @@ from wavfile import read, write
 from wavfileinfo import outputinfo
 
 def usage():
-    print('slices.py -i <inputfile> -o <outputfile>')
+    print('mark-silences.py -i <inputfile> -o <outputfile>')
     sys.exit(2)
 
 def main(argv):
