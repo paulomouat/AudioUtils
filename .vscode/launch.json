@@ -10,7 +10,8 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": ["--inputfile", "~/Downloads/projects/audioutils/regions-input.wav", "--outputfile", "~/Downloads/projects/audioutils/regions-extended-1.1.wav", "--factor", "2"],
+            "cwd": "/Users/paulomouat/Downloads/projects/test",
+            "args": ["--inputfile", "~/Downloads/projects/test/clip-orig2.wav", "--outputfile", "~/Downloads/projects/test/ckip-norm.wav", "--gain", "-2.5"],
             //"args": ["--inputfile", "~/Downloads/projects/audioutils/regions-small.wav", "--outputfile", "~/Downloads/projects/audioutils/regions-extended.wav"],
         }
     ]
